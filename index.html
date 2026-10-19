@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Shivesh Shandilaya</title>
+<meta name="description" content="Shivesh Shandilaya, Ph.D. candidate in Civil &amp; Environmental Engineering, University of Utah. Research on fracture evolution and instability in naturally fractured rocks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* Layout: sticky top nav; sticky profile sidebar beside a main column with a fracture trace and depth-log markers. Deliberately single-theme (pure white). */
+  :root{
+    --stone:#FFFFFF;
+    --paper:#FFFFFF;
+    --ink:#211F1B;
+    --slate:#4B5560;
+    --rust:#B04F22;
+    --rust-dim:#B04F2233;
+    --core:#CFC5AE;
+    --line:#D8D2C4;
+    --maxw:1180px;
+    --sans:'Calibri','Carlito',ui-sans-serif,system-ui,sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+    color-scheme:light;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth; font-size:118%;}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  body{
+    margin:0;
+    background:var(--stone);
+    color:var(--ink);
+    font-family:var(--sans);
+    font-size:1rem;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--paper);}
+  h1,h2,h3{font-family:var(--sans); font-weight:700; margin:0; color:var(--ink); text-wrap:balance;}
+  p{margin:0;}
+  a{color:var(--rust); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--rust); outline-offset:3px;}
+  .eyebrow{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--rust);}
+
+  /* ---------- top nav ---------- */
+  .topnav{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:50;
+    background:rgba(255,255,255,0.94); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .topnav-inner{
+    max-width:var(--maxw); margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between; gap:1.5rem;
+    padding-block:0.9rem;
+    padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  }
+  .topnav-brand{font-family:var(--mono); font-size:0.78rem; color:var(--ink); letter-spacing:0.02em; white-space:nowrap;}
+  .topnav-links{
+    display:flex; gap:1.6rem; min-width:0;
+    font-family:var(--mono); font-size:0.76rem; letter-spacing:0.02em;
+    overflow-x:auto; scrollbar-width:none;
+  }
+  .topnav-links::-webkit-scrollbar{display:none;}
+  .topnav-links a{color:var(--slate); white-space:nowrap; padding:0.25rem 0.1rem; border-bottom:2px solid transparent; transition:color .15s ease, border-color .15s ease;}
+  .topnav-links a:hover, .topnav-links a:focus-visible{color:var(--rust); border-bottom-color:var(--rust); text-decoration:none;}
+  @media (max-width:600px){
+    .topnav-brand{display:none;}
+    .topnav-links{gap:1.1rem;}
+  }
+
+  /* ---------- layout shell ---------- */
+  .shell{
+    display:grid; grid-template-columns:300px minmax(0,1fr);
+    max-width:var(--maxw); margin:0 auto;
+    padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  }
+  @media (max-width:900px){ .shell{grid-template-columns:minmax(0,1fr);} }
+
+  /* ---------- sidebar ---------- */
+  .sidebar{
+    position:sticky; top:calc(58px + env(safe-area-inset-top,0px)); align-self:start;
+    padding:3rem 2rem 2rem 0;
+    display:flex; flex-direction:column; gap:1.75rem;
+  }
+  @media (max-width:900px){
+    .sidebar{position:relative; top:0; padding:2rem 0 1.5rem; border-bottom:1px solid var(--line);}
+  }
+  .avatar{
+    width:104px; height:104px; border-radius:6px;
+    background:linear-gradient(155deg,var(--core),var(--slate));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--sans); font-weight:700; font-size:2.1rem; color:var(--paper);
+    letter-spacing:0.02em; position:relative; overflow:hidden;
+  }
+  .avatar::after{
+    content:""; position:absolute; inset:0;
+    background:
+      linear-gradient(115deg, transparent 42%, var(--rust) 42.6%, var(--rust) 43.4%, transparent 44%),
+      linear-gradient(70deg, transparent 63%, var(--paper) 63.6%, var(--paper) 64%, transparent 65%);
+    opacity:0.55; mix-blend-mode:overlay;
+  }
+  .sidebar h1{font-size:1.55rem; line-height:1.25; margin-top:0.9rem;}
+  .sidebar .role{font-size:0.95rem; color:var(--slate); margin-top:0.35rem; max-width:24ch;}
+  .sidebar .status{
+    margin-top:0.9rem; display:inline-block; font-family:var(--mono); font-size:0.68rem; letter-spacing:0.03em;
+    color:var(--rust); border:1px solid var(--rust-dim); padding:0.3rem 0.55rem; border-radius:3px;
+  }
+  .sidebar-links{
+    display:flex; flex-direction:column; gap:0.5rem; font-size:0.9rem;
+    padding-top:1.5rem; border-top:1px solid var(--line);
+  }
+  @media (max-width:900px){ .sidebar-links{flex-direction:row; flex-wrap:wrap; gap:0.5rem 1.25rem;} }
+  .sidebar-links a{color:var(--slate);}
+  .sidebar-links a:hover{color:var(--rust);}
+
+  /* ---------- main column + fracture trace ---------- */
+  .main-col{position:relative; padding:3rem 0 6rem 2.75rem; border-left:1px solid var(--line); min-width:0;}
+  @media (max-width:900px){ .main-col{padding:1rem 0 4rem; border-left:none;} }
+  .fracture-svg{position:absolute; left:-1px; top:0; height:100%; width:3px; overflow:visible;}
+  @media (max-width:900px){ .fracture-svg{display:none;} }
+
+  section{position:relative; padding:3.5rem 0; border-bottom:1px solid var(--line); scroll-margin-top:5rem;}
+  section:last-of-type{border-bottom:none;}
+  .depth-mark{
+    font-family:var(--mono); font-size:0.68rem; color:var(--slate);
+    position:absolute; left:-2.75rem; top:3.6rem; writing-mode:vertical-rl;
+  }
+  @media (max-width:900px){ .depth-mark{display:none;} }
+  h2.section-title{font-size:1.9rem; margin:0.25rem 0 0.3rem;}
+  .section-sub{color:var(--slate); font-size:0.98rem; margin-bottom:2rem; max-width:60ch;}
+
+  /* ---------- hero ---------- */
+  .hero{padding-top:1rem;}
+  .hero p.lede{font-weight:700; font-size:1.55rem; line-height:1.4; max-width:34ch; margin:1rem 0 1.75rem; color:var(--ink);}
+  .hero .lede em{font-style:italic; color:var(--rust);}
+  p.bio{max-width:62ch; color:var(--slate);}
+  p.bio + p.bio{margin-top:1rem;}
+  .tag-row{display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:1.75rem;}
+  .tag{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.03em; padding:0.35rem 0.65rem; border:1px solid var(--core); border-radius:3px; color:var(--slate); background:var(--paper);}
+
+  /* ---------- cards ---------- */
+  .research-grid{display:flex; flex-direction:column; gap:1.25rem;}
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:1.6rem 1.75rem; position:relative; transition:border-color .15s ease, transform .15s ease;}
+  .card:hover{border-color:var(--rust-dim); transform:translateX(2px);}
+  .card .idx{font-family:var(--mono); font-size:0.7rem; color:var(--rust); display:block; margin-bottom:0.6rem;}
+  .card h3{font-size:1.2rem; margin-bottom:0.5rem;}
+  .card p{color:var(--slate); font-size:0.97rem;}
+  .card .meta{font-family:var(--mono); font-size:0.7rem; color:var(--slate); margin-bottom:0.5rem; display:block;}
+  .methods{margin-top:0.9rem; display:flex; flex-wrap:wrap; gap:0.4rem;}
+  .methods span{font-family:var(--mono); font-size:0.68rem; color:var(--ink); background:var(--stone); border:1px solid var(--line); padding:0.25rem 0.5rem; border-radius:2px;}
+  .teach-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1.25rem;}
+  @media (max-width:700px){ .teach-grid{grid-template-columns:minmax(0,1fr);} }
+
+  /* ---------- publications ---------- */
+  .pub-group{font-family:var(--mono); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--slate); margin:2rem 0 0.25rem;}
+  .pub-group:first-of-type{margin-top:0;}
+  .pub-list{display:flex; flex-direction:column;}
+  .pub{padding:1.25rem 0; border-top:1px solid var(--line); display:grid; grid-template-columns:90px minmax(0,1fr); gap:1.25rem;}
+  .pub:first-child{border-top:none;}
+  @media (max-width:600px){ .pub{grid-template-columns:minmax(0,1fr); gap:0.35rem;} }
+  .pub .status{font-family:var(--mono); font-size:0.68rem; color:var(--rust); text-transform:uppercase; letter-spacing:0.04em; padding-top:0.2rem;}
+  .pub h3{font-size:1.05rem; font-weight:700; margin-bottom:0.3rem; line-height:1.4;}
+  .pub .authors{font-size:0.92rem; color:var(--ink);}
+  .pub .authors b{font-weight:700;}
+  .pub .venue{color:var(--slate); font-size:0.92rem; font-style:italic;}
+  .pub .links{margin-top:0.4rem; font-size:0.88rem; display:flex; flex-wrap:wrap; gap:1rem;}
+  .scholar-cta{margin-top:2rem; font-size:0.95rem; color:var(--slate);}
+
+  /* ---------- about: two columns ---------- */
+  .split-two{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:2.5rem; margin-top:2.25rem;}
+  @media (max-width:700px){ .split-two{grid-template-columns:minmax(0,1fr);} }
+  .split-two h3{font-family:var(--mono); font-weight:500; letter-spacing:0.02em; text-transform:uppercase; font-size:0.78rem; color:var(--rust); margin-bottom:0.9rem;}
+  .timeline-item{padding-bottom:1.1rem; margin-bottom:1.1rem; border-bottom:1px dashed var(--line);}
+  .timeline-item:last-child{border-bottom:none; margin-bottom:0; padding-bottom:0;}
+  .timeline-item .when{font-family:var(--mono); font-size:0.7rem; color:var(--slate); font-variant-numeric:tabular-nums;}
+  .timeline-item .what{font-size:0.98rem; margin-top:0.2rem;}
+  .timeline-item .where{font-size:0.9rem; color:var(--slate);}
+
+  /* ---------- contact ---------- */
+  .contact-grid{display:flex; flex-wrap:wrap; gap:0.9rem;}
+  .contact-card{flex:1 1 220px; min-width:0; background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:1.1rem 1.3rem;}
+  .contact-card .label{font-family:var(--mono); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; color:var(--slate); display:block; margin-bottom:0.35rem;}
+  .contact-card a, .contact-card .email{font-size:0.98rem; overflow-wrap:anywhere;}
+  .contact-card .email{user-select:all; color:var(--ink);}
+  .copy-btn{margin-top:0.6rem; font-family:var(--mono); font-size:0.7rem; color:var(--rust); background:var(--paper); border:1px solid var(--rust-dim); border-radius:3px; padding:0.3rem 0.6rem; cursor:pointer;}
+  .copy-btn:hover{border-color:var(--rust);}
+
+  footer{padding:2rem 0 0; color:var(--slate); font-size:0.78rem; font-family:var(--mono);}
+</style>
+
+</head>
+<body>
+<nav class="topnav" aria-label="Primary">
+  <div class="topnav-inner">
+    <span class="topnav-brand">S. Shandilaya</span>
+    <div class="topnav-links">
+      <a href="#home">Home</a>
+      <a href="#about">About</a>
+      <a href="#research">Research</a>
+      <a href="#teaching">Teaching</a>
+      <a href="#publications">Publication</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<div class="shell">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar">
+    <div>
+      <div class="avatar" aria-hidden="true">SS</div>
+      <h1>Shivesh Shandilaya</h1>
+      <p class="role">Ph.D. Candidate, Civil &amp; Environmental Engineering, University of Utah</p>
+      <span class="status">Ph.D. expected May 2027</span>
+    </div>
+    <div class="sidebar-links">
+      <a href="#contact">Email</a>
+      <a href="https://scholar.google.com/citations?user=MUNon5AAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
+      <a href="https://www.linkedin.com/in/shivesh-shandilaya-0787bb104/" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://orcid.org/0009-0006-1582-8574" target="_blank" rel="noopener">ORCID</a>
+    </div>
+  </aside>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main-col">
+    <svg class="fracture-svg" viewBox="0 0 3 1000" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M1.5,0 L1.5,90 L0.5,110 L2,140 L1.5,220 L1.5,420 L2.2,450 L0.6,480 L1.5,560 L1.5,760 L0.8,790 L2,815 L1.5,1000"
+            stroke="#B04F22" stroke-width="1.4" fill="none" opacity="0.55"/>
+    </svg>
+
+    <!-- ---------- HOME ---------- -->
+    <section id="home" class="hero">
+      <span class="depth-mark">0.0 m</span>
+      <span class="eyebrow">Fracture mechanics · Rock mechanics · Geomechanics</span>
+      <p class="lede">Studying how fractures <em>nucleate</em>, <em>propagate</em>, and <em>interact</em> in naturally fractured rock, from lab specimens to field-scale reservoirs.</p>
+      <p class="bio">
+        Ph.D. candidate in Civil and Environmental Engineering at the University of Utah, working at the
+        intersection of hydraulic fracturing experiments, FDEM numerical modeling, and poroelastic analysis,
+        with applications in geothermal energy, subsurface carbon storage, and rock slope stability.
+      </p>
+      <div class="tag-row">
+        <span class="tag">Geothermal EGS · Utah FORGE</span>
+        <span class="tag">CO₂ Sequestration · Uintah Basin</span>
+        <span class="tag">Jointed Rock Slope Stability</span>
+      </div>
+    </section>
+
+    <!-- ---------- ABOUT ---------- -->
+    <section id="about">
+      <span class="depth-mark">10.5 m</span>
+      <span class="eyebrow">Who I am</span>
+      <h2 class="section-title">About</h2>
+      <p class="bio">
+        I'm a Ph.D. candidate in Civil and Environmental Engineering at the University of Utah, advised by
+        Dr. Shahrzad Roshankhah, graduating in May 2027. My research combines hydraulic fracturing
+        experiments (digital image correlation, acoustic emission), FDEM numerical modeling in Irazú,
+        poroelastic analysis, and dimensional analysis to understand fracture evolution and instability
+        in naturally fractured rock.
+      </p>
+      <p class="bio">
+        Before my Ph.D., I completed an M.Tech in Geotechnical Engineering at IIT Gandhinagar, worked as a
+        geotechnical design engineer at Larsen &amp; Toubro on metro TBM tunnels and ground improvement, and
+        was a project assistant at IIT Bombay working on the Material Point Method. I serve as President of
+        the ARMA University of Utah Student Chapter, and I have been selected for an NSF–DOE-funded research
+        internship in geothermal geomechanics at Los Alamos National Laboratory.
+      </p>
+
+      <div class="split-two">
+        <div>
+          <h3>Education &amp; Experience</h3>
+          <div class="timeline-item">
+            <div class="when">Upcoming</div>
+            <div class="what">Research Intern, Geothermal Geomechanics</div>
+            <div class="where">Los Alamos National Laboratory (NSF–DOE funded)</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Aug 2023 – May 2027 (expected)</div>
+            <div class="what">Ph.D., Civil &amp; Environmental Engineering (Geomechanics)</div>
+            <div class="where">University of Utah</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Jan 2022 – Jun 2023</div>
+            <div class="what">Project Assistant</div>
+            <div class="where">IIT Bombay</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Sep 2020 – Dec 2021</div>
+            <div class="what">Sr. Design Engineer (Geotech)</div>
+            <div class="where">Larsen &amp; Toubro, Heavy Civil &amp; Metros</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Aug 2018 – Aug 2020</div>
+            <div class="what">M.Tech, Geotechnical Engineering</div>
+            <div class="where">IIT Gandhinagar</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Aug 2013 – Aug 2017</div>
+            <div class="what">B.E., Civil Engineering</div>
+            <div class="where">Dayananda Sagar College of Engineering</div>
+          </div>
+        </div>
+
+        <div>
+          <h3>Leadership, Service &amp; Awards</h3>
+          <div class="timeline-item">
+            <div class="when">Apr 2026 – present</div>
+            <div class="what">President, ARMA University of Utah Student Chapter</div>
+            <div class="where">Vice President, Apr 2025 – Apr 2026</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Apr 2026 – present</div>
+            <div class="what">Graduate Student Advisory Committee (GSAC)</div>
+            <div class="where">University of Utah</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Sep 2025 – present</div>
+            <div class="what">STEM Ambassador, STEMAP</div>
+            <div class="where">NSF-funded program</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Jun 2024</div>
+            <div class="what">Graduate School Travel Award</div>
+            <div class="where">58th US Rock Mechanics/Geomechanics Symposium</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">2018</div>
+            <div class="what">GATE, Civil Engineering: top 1.7% nationally</div>
+          </div>
+          <div class="timeline-item">
+            <div class="when">Memberships</div>
+            <div class="what">ARMA (since 2024) · ASCE (since 2025)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- RESEARCH ---------- -->
+    <section id="research">
+      <span class="depth-mark">24.0 m</span>
+      <span class="eyebrow">Current work</span>
+      <h2 class="section-title">Research</h2>
+      <p class="section-sub">Connected threads linking laboratory fracture experiments, numerical modeling, analytical frameworks, and apparatus design.</p>
+
+      <div class="research-grid">
+        <div class="card">
+          <span class="idx">01 · Experiments + Numerical Modeling</span>
+          <h3>Hydraulic Fracturing &amp; FDEM Modeling of Naturally Fractured Rocks</h3>
+          <p>
+            Pairing physical hydraulic-fracturing experiments with FDEM numerical modeling in Irazú to
+            understand breakdown pressure and fracture interaction where an induced fracture meets
+            pre-existing natural fractures. Fracture-network models built from DFNs extracted from Utah FORGE
+            field data show that breakdown pressure depends non-monotonically on natural fracture density.
+          </p>
+          <div class="methods">
+            <span>DIC</span><span>Acoustic Emission</span><span>FDEM / Irazú</span><span>XFEM</span><span>DFN</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="idx">02 · Analytical Framework</span>
+          <h3>Dimensionless Poroelastic Framework for Fluid Injection</h3>
+          <p>
+            A six-group dimensionless framework (Π<sub>p</sub><sup>max</sup>, D, T<sub>d</sub>, κ, ω, λ)
+            built from first principles for dual-permeability poroelastic systems, applied to Dakota and
+            Entrada sandstones to classify injection regimes and leak-off behavior.
+          </p>
+          <div class="methods">
+            <span>Poroelasticity</span><span>MATLAB</span><span>Dimensional Analysis</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="idx">03 · Apparatus Design</span>
+          <h3>High-Temperature Split-Ring Confinement Testing</h3>
+          <p>
+            Design and fabrication of a split-ring confinement apparatus for thermal crack testing of
+            granite disc specimens under plane-strain conditions with DIC imaging, targeting temperatures
+            representative of geothermal reservoir conditions.
+          </p>
+          <div class="methods">
+            <span>SolidWorks / FEA</span><span>Thermal Testing</span><span>DIC Imaging</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <span class="idx">04 · Rock Slope Stability</span>
+          <h3>Failure Mechanisms in Jointed Rock Slopes</h3>
+          <p>
+            Calibrated numerical simulations that separate the roles of rock matrix and natural fractures in
+            slope instability, and expose limitations of conventional strength reduction methods.
+            Published in <i>Rock Mechanics and Rock Engineering</i> (2025).
+          </p>
+          <div class="methods">
+            <span>Strength Reduction</span><span>Jointed Rock</span><span>Numerical Modeling</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- TEACHING ---------- -->
+    <section id="teaching">
+      <span class="depth-mark">38.0 m</span>
+      <span class="eyebrow">In the classroom</span>
+      <h2 class="section-title">Teaching</h2>
+      <p class="section-sub">Teaching assistantships in mechanics and geotechnical engineering, plus outreach to K–12 and rural communities.</p>
+
+      <div class="teach-grid">
+        <div class="card">
+          <span class="idx">University of Utah</span>
+          <h3>Strength of Materials (CVEEN 2140)</h3>
+          <span class="meta">Teaching Assistant · Jan – Apr 2025</span>
+          <p>Led discussion classes and mentored 63 undergraduate students.</p>
+        </div>
+        <div class="card">
+          <span class="idx">IIT Gandhinagar</span>
+          <h3>Soil Mechanics (CE 301) &amp; Geosynthetics (CE 629)</h3>
+          <span class="meta">Teaching Assistant · Jan – Dec 2019</span>
+          <p>Supported undergraduate and graduate courses in soil mechanics and geosynthetics.</p>
+        </div>
+        <div class="card">
+          <span class="idx">Outreach</span>
+          <h3>STEM Ambassador, STEMAP</h3>
+          <span class="meta">NSF-funded program · Sep 2025 – present</span>
+          <p>Trained in science communication and community engagement; share geomechanics research with community audiences.</p>
+        </div>
+        <div class="card">
+          <span class="idx">Outreach</span>
+          <h3>NEEV Community Outreach, IIT Gandhinagar</h3>
+          <span class="meta">Volunteer · 2018 – 2019</span>
+          <p>Teaching assistant for a two-month computer hardware and networking course for rural youth, with participants from four to five villages.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- PUBLICATIONS ---------- -->
+    <section id="publications">
+      <span class="depth-mark">50.0 m</span>
+      <span class="eyebrow">Selected work</span>
+      <h2 class="section-title">Publications</h2>
+      <p class="section-sub">See Google Scholar for the complete and most current list.</p>
+
+      <p class="pub-group">Journal articles</p>
+      <div class="pub-list">
+        <div class="pub">
+          <span class="status">In Review</span>
+          <div>
+            <h3>Local Stress Redistribution Controls Interactions between Hydraulic Fractures and Pre-existing Fractures</h3>
+            <div class="authors"><b>Shandilaya, S.</b>, Alaleeli, M., Kim, S. H., Mobasher, M., and Roshankhah, S. (2026)</div>
+            <div class="venue">Engineering Fracture Mechanics</div>
+            <div class="links"><a href="https://arxiv.org/abs/2606.12347" target="_blank" rel="noopener">arXiv:2606.12347</a></div>
+          </div>
+        </div>
+        <div class="pub">
+          <span class="status">In Review</span>
+          <div>
+            <h3>Breakdown Pressure and Fracture Evolution in Fractured Rocks with Low-Permeability Matrix</h3>
+            <div class="authors"><b>Shandilaya, S.</b>, and Roshankhah, S. (2026)</div>
+            <div class="venue">Géotechnique Letters</div>
+          </div>
+        </div>
+        <div class="pub">
+          <span class="status">2025</span>
+          <div>
+            <h3>Mechanisms and Consequences of Failure in Jointed Rock Slopes: Impact of the Strength Reduction Scheme and Continuous Joint Dip Angle</h3>
+            <div class="authors"><b>Shandilaya, S.</b>, and Roshankhah, S. (2025)</div>
+            <div class="venue">Rock Mechanics and Rock Engineering, 1–21</div>
+            <div class="links"><a href="https://doi.org/10.1007/s00603-025-04775-3" target="_blank" rel="noopener">doi:10.1007/s00603-025-04775-3</a></div>
+          </div>
+        </div>
+        <div class="pub">
+          <span class="status">In Prep</span>
+          <div>
+            <h3>Matrix Permeability &amp; Natural Fracture Density Govern Hydromechanical Response of Sandstone during CO₂ Injection</h3>
+            <div class="authors"><b>Shandilaya, S.</b>, and Roshankhah, S. (2026)</div>
+            <div class="venue">Géotechnique Letters</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="pub-group">Conference papers</p>
+      <div class="pub-list">
+        <div class="pub">
+          <span class="status">2026</span>
+          <div>
+            <h3>Fluid Injection-Induced Fracture Evolution and Breakdown Pressure in Naturally Fractured Rocks with Ultra-Low Permeability Matrix</h3>
+            <div class="authors"><b>Shandilaya, S.</b>, and Roshankhah, S.</div>
+            <div class="venue">51st Workshop on Geothermal Reservoir Engineering, Stanford University, Stanford, CA</div>
+          </div>
+        </div>
+        <div class="pub">
+          <span class="status">2026</span>
+          <div>
+            <h3>Evaluation of Rock Fractures in the Laboratory Using Acoustic Emissions Measurements and Digital Image Correlation</h3>
+            <div class="authors"><b>Shandilaya, S.</b>, and Roshankhah, S.</div>
+            <div class="venue">Geo-Congress 2026, Salt Lake City, UT</div>
+          </div>
+        </div>
+        <div class="pub">
+          <span class="status">2024</span>
+          <div>
+            <h3>Laboratory Evaluation of Natural Fracture and Hydraulic Fracture Interactions Using Digital Image Correlation</h3>
+            <div class="authors"><b>Shandilaya, S.</b>, and Roshankhah, S.</div>
+            <div class="venue">58th US Rock Mechanics/Geomechanics Symposium, Golden, CO</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="scholar-cta">
+        Plus five more conference papers (ARMA 2024 and 2025, Offshore Technology Conference 2024, 21st ICSMGE 2026).
+        Full publication history and citation metrics:
+        <a href="https://scholar.google.com/citations?user=MUNon5AAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar profile →</a>
+      </p>
+    </section>
+
+    <!-- ---------- CONTACT ---------- -->
+    <section id="contact">
+      <span class="depth-mark">62.0 m</span>
+      <span class="eyebrow">Get in touch</span>
+      <h2 class="section-title">Contact</h2>
+      <p class="section-sub">Open to conversations about naturally fractured rock, geothermal energy, and rock mechanics research.</p>
+
+      <div class="contact-grid">
+        <div class="contact-card">
+          <span class="label">Email</span>
+          <span class="email" id="email">Shiveshshandilaya@gmail.com</span><br>
+          <button type="button" class="copy-btn" id="copy">Copy email</button>
+        </div>
+        <div class="contact-card">
+          <span class="label">Google Scholar</span>
+          <a href="https://scholar.google.com/citations?user=MUNon5AAAAAJ&amp;hl=en" target="_blank" rel="noopener">View profile</a>
+        </div>
+        <div class="contact-card">
+          <span class="label">LinkedIn</span>
+          <a href="https://www.linkedin.com/in/shivesh-shandilaya-0787bb104/" target="_blank" rel="noopener">Connect</a>
+        </div>
+        <div class="contact-card">
+          <span class="label">ORCID</span>
+          <a href="https://orcid.org/0009-0006-1582-8574" target="_blank" rel="noopener">0009-0006-1582-8574</a>
+        </div>
+      </div>
+    </section>
+
+    <footer>© 2026 Shivesh Shandilaya</footer>
+  </div>
+</div>
+
+<script>
+  (function(){
+    var btn=document.getElementById('copy'), em=document.getElementById('email');
+    btn.addEventListener('click',function(){
+      function done(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy email'},1800);}
+      function sel(){var r=document.createRange();r.selectNodeContents(em);var s=getSelection();s.removeAllRanges();s.addRange(r);btn.textContent='Selected, press Ctrl+C';}
+      try{navigator.clipboard.writeText(em.textContent).then(done,sel);}catch(e){sel();}
+    });
+  })();
+</script>
+</body>
+</html>
